@@ -3,6 +3,20 @@ import axios from "axios";
 
 const AuthContext = createContext(null);
 
+// Create axios instance with default config
+const api = axios.create({
+  baseURL: "http://localhost:5000/api",
+});
+
+// Add token to requests if it exists
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -18,13 +32,10 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        {
-          email,
-          password,
-        }
-      );
+      const response = await api.post("/auth/login", {
+        email,
+        password,
+      });
       const { token, user } = response.data;
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
@@ -40,15 +51,12 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (firstName, lastName, email, password) => {
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/signup",
-        {
-          firstName,
-          lastName,
-          email,
-          password,
-        }
-      );
+      const response = await api.post("/auth/signup", {
+        firstName,
+        lastName,
+        email,
+        password,
+      });
       const { token, user } = response.data;
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
@@ -70,7 +78,7 @@ export const AuthProvider = ({ children }) => {
 
   const forgotPassword = async (email) => {
     try {
-      await axios.post("http://localhost:5000/api/auth/forgot-password", {
+      await api.post("/auth/forgot-password", {
         email,
       });
       return { success: true };
@@ -84,7 +92,7 @@ export const AuthProvider = ({ children }) => {
 
   const resetPassword = async (token, password) => {
     try {
-      await axios.post("http://localhost:5000/api/auth/reset-password", {
+      await api.post("/auth/reset-password", {
         token,
         password,
       });

@@ -6,6 +6,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { WebSocketProvider } from "./context/WebSocketContext";
 import { ProtectedRoute, PublicRoute } from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -24,90 +25,81 @@ import RTL from "./pages/RTL";
 import Billing from "./pages/Billing";
 import Profile from "./pages/Profile";
 
-function App() {
+const App = () => {
   return (
     <Router>
       <AuthProvider>
-        <div className="flex flex-col min-h-screen">
-          <Routes>
-            {/* Public Routes */}
-            <Route
-              path="/"
-              element={
-                <>
-                  <Navbar />
-                  <Home />
-                  <Footer />
-                </>
-              }
-            />
-            <Route
-              path="/login"
-              element={
-                <PublicRoute>
-                  <Navbar />
-                  <Login />
-                  <Footer />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/signup"
-              element={
-                <PublicRoute>
-                  <Navbar />
-                  <Signup />
-                  <Footer />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/forgot-password"
-              element={
-                <PublicRoute>
-                  <Navbar />
-                  <ForgotPassword />
-                  <Footer />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/reset-password/:token"
-              element={
-                <PublicRoute>
-                  <Navbar />
-                  <ResetPassword />
-                  <Footer />
-                </PublicRoute>
-              }
-            />
+        <WebSocketProvider>
+          <div className="min-h-screen bg-gray-100">
+            <Routes>
+              {/* Public Routes */}
+              <Route
+                path="/"
+                element={
+                  <PublicRoute>
+                    <Navbar />
+                    <Home />
+                    <Footer />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/login"
+                element={
+                  <PublicRoute>
+                    <Login />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/signup"
+                element={
+                  <PublicRoute>
+                    <Signup />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/forgot-password"
+                element={
+                  <PublicRoute>
+                    <ForgotPassword />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/reset-password"
+                element={
+                  <PublicRoute>
+                    <ResetPassword />
+                  </PublicRoute>
+                }
+              />
 
-            {/* Protected Dashboard Routes */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Dashboard />} />
-              <Route path="analytics" element={<Analytics />} />
-              <Route path="users" element={<Users />} />
-              <Route path="settings" element={<Settings />} />
-              <Route path="tables" element={<Tables />} />
-              <Route path="rtl" element={<RTL />} />
-              <Route path="billing" element={<Billing />} />
-              <Route path="profile" element={<Profile />} />
-            </Route>
+              {/* Protected Routes */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<Dashboard />} />
+                <Route path="tables" element={<Tables />} />
+                <Route path="billing" element={<Billing />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="settings" element={<Settings />} />
+              </Route>
 
-            {/* Catch all route */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </div>
+              {/* Catch all route */}
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </div>
+        </WebSocketProvider>
       </AuthProvider>
     </Router>
   );
-}
+};
 
 export default App;
