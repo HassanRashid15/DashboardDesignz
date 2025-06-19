@@ -1,6 +1,4 @@
 const express = require("express");
-const http = require("http");
-const WebSocket = require("ws");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
@@ -11,42 +9,6 @@ const auth = require("./middleware/auth");
 dotenv.config();
 
 const app = express();
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
-
-// WebSocket connection handling
-wss.on("connection", (ws) => {
-  console.log("New WebSocket connection");
-
-  ws.on("message", (message) => {
-    const data = JSON.parse(message);
-    // Handle different types of messages
-    switch (data.type) {
-      case "subscribe":
-        // Handle subscription to specific channels
-        break;
-      case "unsubscribe":
-        // Handle unsubscription
-        break;
-    }
-  });
-
-  ws.on("close", () => {
-    console.log("Client disconnected");
-  });
-});
-
-// Broadcast function to send updates to all connected clients
-const broadcast = (data) => {
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(data));
-    }
-  });
-};
-
-// Make broadcast function available globally
-app.set("broadcast", broadcast);
 
 // Middleware
 app.use(cors());
@@ -87,6 +49,6 @@ app.get("/api/user/profile", auth, async (req, res) => {
 // Add more protected routes here as needed
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

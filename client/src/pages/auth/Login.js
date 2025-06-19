@@ -6,15 +6,36 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { login } = useAuth();
+  const [showVerificationMessage, setShowVerificationMessage] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState("");
+  const { login, resendVerification } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setShowVerificationMessage(false);
+
     const result = await login(email, password);
     if (result.success) {
       navigate("/dashboard");
+    } else {
+      if (result.requiresVerification) {
+        setShowVerificationMessage(true);
+        setVerificationEmail(result.email);
+        setError("Please verify your email address before logging in.");
+      } else {
+        setError(result.message);
+      }
+    }
+  };
+
+  const handleResendVerification = async () => {
+    const result = await resendVerification(verificationEmail);
+    if (result.success) {
+      setError(
+        "Verification email sent successfully! Please check your inbox."
+      );
     } else {
       setError(result.message);
     }
@@ -31,10 +52,25 @@ const Login = () => {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div
-              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+              className={`border px-4 py-3 rounded relative ${
+                showVerificationMessage
+                  ? "bg-yellow-100 border-yellow-400 text-yellow-700"
+                  : "bg-red-100 border-red-400 text-red-700"
+              }`}
               role="alert"
             >
               <span className="block sm:inline">{error}</span>
+              {showVerificationMessage && (
+                <div className="mt-2">
+                  <button
+                    type="button"
+                    onClick={handleResendVerification}
+                    className="text-sm underline hover:no-underline"
+                  >
+                    Resend verification email
+                  </button>
+                </div>
+              )}
             </div>
           )}
           <div className="rounded-md shadow-sm -space-y-px">

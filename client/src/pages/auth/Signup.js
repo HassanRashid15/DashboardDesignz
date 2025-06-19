@@ -14,9 +14,14 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
     const result = await signup(firstName, lastName, email, password);
+
     if (result.success) {
-      navigate("/dashboard", { replace: true });
+      // Redirect to verification page with email
+      navigate("/verify-email", {
+        state: { email: email },
+      });
     } else {
       setError(result.message);
     }

@@ -42,9 +42,15 @@ export const AuthProvider = ({ children }) => {
       setUser(user);
       return { success: true };
     } catch (error) {
+      const errorMessage = error.response?.data?.message || "Login failed";
+      const requiresVerification = error.response?.data?.requiresVerification;
+      const userEmail = error.response?.data?.email;
+
       return {
         success: false,
-        message: error.response?.data?.message || "Login failed",
+        message: errorMessage,
+        requiresVerification,
+        email: userEmail,
       };
     }
   };
@@ -57,11 +63,14 @@ export const AuthProvider = ({ children }) => {
         email,
         password,
       });
-      const { token, user } = response.data;
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-      setUser(user);
-      return { success: true };
+
+      // Don't store token or user data until email is verified
+      return {
+        success: true,
+        message: response.data.message,
+        requiresVerification: response.data.requiresVerification,
+        email: response.data.email,
+      };
     } catch (error) {
       return {
         success: false,
@@ -105,16 +114,46 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const resendVerification = async (email) => {
+    try {
+      await api.post("/auth/resend-verification", {
+        email,
+      });
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || "Failed to send verification email",
+      };
+    }
+  };
+
+  const verifyResetToken = async (token) => {
+    try {
+      await api.get(`/auth/verify-reset-token/${token}`);
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || "Invalid or expired token",
+      };
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
         user,
         loading,
+        setUser,
         login,
         signup,
         logout,
         forgotPassword,
         resetPassword,
+        resendVerification,
+        verifyResetToken,
       }}
     >
       {children}
